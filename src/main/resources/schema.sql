@@ -1,10 +1,10 @@
-CREATE TABLE blueprints (
+CREATE TABLE IF NOT EXISTS blueprints (
     author VARCHAR(100) NOT NULL,
     name VARCHAR(100) NOT NULL,
     PRIMARY KEY (author, name)
 );
 
-CREATE TABLE blueprint_points (
+CREATE TABLE IF NOT EXISTS blueprint_points (
     author VARCHAR(100) NOT NULL,
     name VARCHAR(100) NOT NULL,
     point_order INTEGER NOT NULL,
