@@ -10,12 +10,13 @@ import jakarta.validation.constraints.NotBlank;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import edu.eci.arsw.blueprints.dto.ApiResponse;
 import java.util.Map;
 import java.util.Set;
 
 @RestController
-@RequestMapping("/blueprints")
+//CAMBIÉ EL PATH COMO LO SOLICITAN MI PRI
+@RequestMapping("/api/v1/blueprints")
 public class BlueprintsAPIController {
 
     private final BlueprintsServices services;
@@ -24,17 +25,25 @@ public class BlueprintsAPIController {
 
     // GET /blueprints
     @GetMapping
-    public ResponseEntity<Set<Blueprint>> getAll() {
-        return ResponseEntity.ok(services.getAllBlueprints());
+    public ResponseEntity<ApiResponse<Set<Blueprint>>> getAll() {
+        ApiResponse<Set<Blueprint>> response = ApiResponse.success(
+                services.getAllBlueprints(),
+                HttpStatus.OK.value(),
+                "All blueprints retrieved successfully"
+        );
+        return ResponseEntity.ok(response);
     }
 
     // GET /blueprints/{author}
     @GetMapping("/{author}")
     public ResponseEntity<?> byAuthor(@PathVariable String author) {
         try {
-            return ResponseEntity.ok(services.getBlueprintsByAuthor(author));
+            ApiResponse<Set<Blueprint>> response = ApiResponse.success(services.getBlueprintsByAuthor(author), HttpStatus.OK.value(), "Blueprints retrieved successfully");
+            return ResponseEntity.ok(response);
+
         } catch (BlueprintNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
+            ApiResponse<String> errorResponse = ApiResponse.error(e.getMessage(), HttpStatus.NOT_FOUND.value(), "Blueprints not found for author: " + author);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
         }
     }
 
@@ -42,9 +51,11 @@ public class BlueprintsAPIController {
     @GetMapping("/{author}/{bpname}")
     public ResponseEntity<?> byAuthorAndName(@PathVariable String author, @PathVariable String bpname) {
         try {
-            return ResponseEntity.ok(services.getBlueprint(author, bpname));
+            ApiResponse<Blueprint> response = ApiResponse.success(services.getBlueprint(author, bpname), HttpStatus.OK.value(), "Blueprint retrieved successfully");
+            return ResponseEntity.ok(response);
         } catch (BlueprintNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
+            ApiResponse<String> errorResponse = ApiResponse.error(e.getMessage(), HttpStatus.NOT_FOUND.value(), "Blueprint not found for author: " + author + " and name: " + bpname);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
         }
     }
 
@@ -54,9 +65,11 @@ public class BlueprintsAPIController {
         try {
             Blueprint bp = new Blueprint(req.author(), req.name(), req.points());
             services.addNewBlueprint(bp);
-            return ResponseEntity.status(HttpStatus.CREATED).build();
+            ApiResponse<String> response = ApiResponse.success("Blueprint created successfully", HttpStatus.CREATED.value(), "Blueprint created successfully");
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (BlueprintPersistenceException e) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", e.getMessage()));
+            ApiResponse<String> errorResponse = ApiResponse.error(e.getMessage(), HttpStatus.FORBIDDEN.value(), "Error creating blueprint");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
         }
     }
 
@@ -66,9 +79,11 @@ public class BlueprintsAPIController {
                                       @RequestBody Point p) {
         try {
             services.addPoint(author, bpname, p.x(), p.y());
-            return ResponseEntity.status(HttpStatus.ACCEPTED).build();
+            ApiResponse<String> response = ApiResponse.success("Point added successfully", HttpStatus.ACCEPTED.value(), "Point added successfully");
+            return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
         } catch (BlueprintNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
+            ApiResponse <String> errorResponse = ApiResponse.error(e.getMessage(), HttpStatus.NOT_FOUND.value(), "Blueprint not found for author: " + author + " and name: " + bpname);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
         }
     }
 
