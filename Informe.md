@@ -104,6 +104,19 @@ Se verificó directamente en el contenedor de Docker que el motor relacional est
 
     * Estando ahi hacemos la consultas necesarias
 
+#### D. Pruebas Unitarias de los Filtros
+
+Se implementaron pruebas unitarias con JUnit 5 para las clases RedundancyFilter y UndersamplingFilter, cubriendo los siguientes casos: eliminación de puntos consecutivos duplicados, conservación de duplicados no consecutivos, manejo de listas vacías, y retención de puntos en índices pares. La ejecución de mvn test confirma que todas las pruebas pasan exitosamente:
+
+![alt text](image-1.png)
+
+
+### E. Prueba del Manejo de Errores (400 Bad Request)
+
+Para validar el manejo uniforme de errores, se envió un POST con el campo author vacío. El GlobalExceptionHandler intercepta la excepción de validación y retorna un 400 Bad Request envuelto en el mismo contrato ApiResponse usado en las respuestas exitosas:
+
+![alt text](image-7.png)
+
 ---
 
 ## 4. Buenas Prácticas Aplicadas
@@ -125,3 +138,6 @@ Durante el desarrollo se integraron estándares profesionales para el diseño de
 
 4. **Strategy Pattern e Inversion of Control:**
    Los filtros `RedundancyFilter` y `UndersamplingFilter` fueron implementados aplicando el principio OCP (**Open/Closed Principle**) de SOLID. Gracias a la inyección de dependencias y los perfiles de Spring (`@Profile`), es posible alterar el comportamiento algorítmico sin modificar el código fuente base.
+
+5. **Manejo Centralizado de Excepciones (Global Exception Handling):**
+Se implementó un @RestControllerAdvice (GlobalExceptionHandler) que centraliza el manejo de errores de validación (@Valid), JSON malformado y errores inesperados del servidor. Esto asegura que absolutamente todas las respuestas de la API —exitosas o de error— sigan el mismo contrato ApiResponse<T>, evitando manejo de errores repetido en cada endpoint del controlador.
